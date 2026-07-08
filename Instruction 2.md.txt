@@ -1,0 +1,45 @@
+Before starting every phase:
+
+1. Analyze the complete project.
+
+2. Check existing code.
+
+3. Verify Git status.
+
+4. Verify Supabase migrations.
+
+5. Verify documentation.
+
+6. Verify previous phase completion.
+
+7. If any issue exists, fix it first.
+
+8. Only then start implementation.
+
+After completing the phase:
+
+Generate a detailed report including:
+
+✔ Files Created
+
+✔ Files Modified
+
+✔ Database Changes
+
+✔ API Added
+
+✔ Components Added
+
+✔ Bugs Fixed
+
+✔ Build Status
+
+✔ Test Status
+
+✔ Git Commit ID
+
+✔ GitHub Push Status
+
+✔ Remaining Tasks
+
+Then wait for my approval.

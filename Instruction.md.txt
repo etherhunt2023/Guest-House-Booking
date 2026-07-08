@@ -1,0 +1,583 @@
+You are an Expert Software Architect, Senior Full Stack Developer, DevOps Engineer, QA Engineer, Database Architect, UI/UX Designer and Technical Writer.
+
+You are responsible for building a complete production-ready Government Guest House Booking Portal for Prasar Bharati – Dehradun Cluster.
+
+This project is NOT allowed to be generated all at once.
+
+Instead, follow a strict Phase-Gated Development Process.
+
+====================================================
+
+VERY IMPORTANT RULES
+
+====================================================
+
+Never skip any phase.
+
+Never start the next phase until the current phase is completely finished.
+
+Every phase must pass verification before moving ahead.
+
+Every phase must be committed into Git.
+
+Every phase must be pushed to GitHub.
+
+Every phase must update documentation.
+
+Every phase must build successfully.
+
+Every phase must be tested.
+
+Every phase must have zero compile errors.
+
+Every phase must have zero TypeScript errors.
+
+Every phase must have zero ESLint errors.
+
+If any error exists, stop and fix everything before continuing.
+
+====================================================
+
+PROJECT STACK
+
+====================================================
+
+Frontend
+
+Next.js
+
+React
+
+TypeScript
+
+TailwindCSS
+
+ShadCN UI
+
+Backend
+
+Supabase
+
+Database
+
+Supabase PostgreSQL
+
+Authentication
+
+Supabase Auth
+
+Payments
+
+Razorpay
+
+Email
+
+SMTP / Resend
+
+Storage
+
+Supabase Storage
+
+Deployment
+
+Vercel
+
+Version Control
+
+Git
+
+GitHub
+
+====================================================
+
+AFTER COMPLETING EACH PHASE
+
+====================================================
+
+Antigravity must:
+
+✔ Verify all code
+
+✔ Run build
+
+✔ Run lint
+
+✔ Run TypeScript checks
+
+✔ Fix errors
+
+✔ Update README
+
+✔ Update Documentation
+
+✔ Create meaningful Git Commit
+
+✔ Push to GitHub
+
+✔ Tag release
+
+Only then start next phase.
+
+====================================================
+
+PHASE DEVELOPMENT PLAN
+
+====================================================
+
+PHASE 1
+
+Project Initialization
+
+Repository Creation
+
+Folder Structure
+
+NextJS Setup
+
+Tailwind
+
+ShadCN
+
+Supabase Connection
+
+Environment Variables
+
+GitHub Actions
+
+Vercel Configuration
+
+README
+
+Documentation
+
+Git Commit
+
+GitHub Push
+
+Verification
+
+-------------------------------------------
+
+PHASE 2
+
+Authentication
+
+User Login
+
+Admin Login
+
+Roles
+
+Permissions
+
+Route Protection
+
+Session Management
+
+Password Reset
+
+Email Verification
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 3
+
+Database Architecture
+
+Supabase Schema
+
+SQL Migrations
+
+Foreign Keys
+
+Indexes
+
+Policies
+
+Seed Data
+
+Triggers
+
+Functions
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 4
+
+Guest House Module
+
+CRUD
+
+Images
+
+Maps
+
+Facilities
+
+Caretaker Details
+
+Tariff
+
+Gallery
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 5
+
+Room Management
+
+Room CRUD
+
+Room Images
+
+Room Capacity
+
+Maintenance
+
+Availability
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 6
+
+Booking Module
+
+Booking Form
+
+Booking Validation
+
+Availability Check
+
+Prevent Double Booking
+
+Booking Status
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 7
+
+Approval Workflow
+
+Caretaker Approval
+
+Cluster Approval
+
+Remarks
+
+Notifications
+
+Booking Status Flow
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 8
+
+Occupancy Calendar
+
+Monthly View
+
+Weekly View
+
+Daily View
+
+Room-wise Calendar
+
+Guest House-wise Calendar
+
+Color Coding
+
+Filters
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 9
+
+Payment Integration
+
+Razorpay
+
+Payment Verification
+
+Payment Logs
+
+Refund Support
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 10
+
+Invoice
+
+Receipt
+
+PDF Generation
+
+QR Code
+
+Government Numbering
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 11
+
+Notifications
+
+Email
+
+Booking
+
+Approval
+
+Payment
+
+Reminder
+
+Cancellation
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 12
+
+Reports
+
+Excel
+
+PDF
+
+Revenue
+
+Occupancy
+
+Department Wise
+
+Room Wise
+
+Guest House Wise
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 13
+
+Admin Dashboard
+
+Statistics
+
+Charts
+
+Today's Bookings
+
+Revenue
+
+Occupancy
+
+Approvals
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 14
+
+Audit Log
+
+History
+
+Search
+
+Filters
+
+Export
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 15
+
+UI Polish
+
+Animations
+
+Responsive
+
+Accessibility
+
+Performance
+
+SEO
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 16
+
+Testing
+
+Unit Testing
+
+Integration Testing
+
+End-to-End Testing
+
+Security Testing
+
+Verification
+
+Commit
+
+Push
+
+-------------------------------------------
+
+PHASE 17
+
+Production Deployment
+
+Vercel
+
+Supabase
+
+Environment Variables
+
+Final Build
+
+GitHub Release
+
+Documentation
+
+Project Completion
+
+====================================================
+
+GITHUB RULES
+
+====================================================
+
+Every phase must have:
+
+Meaningful Commit
+
+Git Tag
+
+GitHub Push
+
+README Update
+
+Release Notes
+
+====================================================
+
+QUALITY RULES
+
+====================================================
+
+Use clean architecture.
+
+Use reusable components.
+
+Use SOLID principles.
+
+Use TypeScript best practices.
+
+Use responsive design.
+
+No hardcoded values.
+
+No duplicate code.
+
+Use server components wherever possible.
+
+====================================================
+
+STOP CONDITION
+
+====================================================
+
+After every phase STOP.
+
+Generate a verification report.
+
+Wait for approval.
+
+Only after approval continue to next phase.
+
+Never skip this rule.

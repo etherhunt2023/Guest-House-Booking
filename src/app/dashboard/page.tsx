@@ -1,8 +1,46 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { logout } from '@/app/auth/actions'
-import { Button } from '@/components/ui/button'
-import { Building2, User, LogOut, Calendar, Home, History } from 'lucide-react'
+import DashboardClient from './DashboardClient'
+
+export const dynamic = 'force-dynamic'
+
+// Mock Fallback Data (renders if database tables do not exist yet)
+const MOCK_GUEST_HOUSES = [
+  {
+    id: 'gh-dehradun',
+    name: 'Dehradun VIP Guest House',
+    location: 'Dehradun',
+    description: 'Centrally located guest house near Haridwar bypass. Features VIP suites, green lawns, and full catering service.',
+    facilities: ['WiFi', 'AC', 'Catering', 'Parking', 'TV Lounge'],
+    rooms: [
+      { id: 'rm-101', guest_house_id: 'gh-dehradun', room_number: '101', type: 'suite', capacity: 2, tariff_internal: 500, tariff_external: 1500, status: 'available' },
+      { id: 'rm-102', guest_house_id: 'gh-dehradun', room_number: '102', type: 'deluxe', capacity: 2, tariff_internal: 300, tariff_external: 1000, status: 'available' },
+      { id: 'rm-103', guest_house_id: 'gh-dehradun', room_number: '103', type: 'standard', capacity: 3, tariff_internal: 150, tariff_external: 600, status: 'maintenance' }
+    ]
+  },
+  {
+    id: 'gh-mussoorie',
+    name: 'Mussoorie Transit House',
+    location: 'Mussoorie',
+    description: 'Scenic transit house located at the hills of Mussoorie, adjacent to the Doordarshan Transmitter compound. Stunning Himalayan views.',
+    facilities: ['WiFi', 'Heater', 'Catering', 'Balcony View'],
+    rooms: [
+      { id: 'rm-201', guest_house_id: 'gh-mussoorie', room_number: '201', type: 'suite', capacity: 2, tariff_internal: 600, tariff_external: 2000, status: 'available' },
+      { id: 'rm-202', guest_house_id: 'gh-mussoorie', room_number: '202', type: 'deluxe', capacity: 2, tariff_internal: 400, tariff_external: 1200, status: 'available' }
+    ]
+  },
+  {
+    id: 'gh-haridwar',
+    name: 'Haridwar Transit House',
+    location: 'Haridwar',
+    description: 'Transit guest house near the holy Ganges. Clean, peaceful environment suitable for touring staff and officers.',
+    facilities: ['WiFi', 'AC', 'Parking', 'Catering'],
+    rooms: [
+      { id: 'rm-301', guest_house_id: 'gh-haridwar', room_number: '301', type: 'standard', capacity: 2, tariff_internal: 200, tariff_external: 700, status: 'available' },
+      { id: 'rm-302', guest_house_id: 'gh-haridwar', room_number: '302', type: 'standard', capacity: 2, tariff_internal: 200, tariff_external: 700, status: 'available' }
+    ]
+  }
+]
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -12,104 +50,47 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const role = user.user_metadata?.role || 'guest'
-  const fullName = user.user_metadata?.full_name || 'Guest User'
-  const email = user.email
-  const department = user.user_metadata?.department || 'N/A'
-  const designation = user.user_metadata?.designation || 'N/A'
+  let guestHouses = []
+  let bookings = []
+
+  try {
+    // 1. Fetch guest houses and rooms
+    const { data: dbGuestHouses, error: ghError } = await supabase
+      .from('guest_houses')
+      .select('*, rooms(*)')
+      .order('name')
+
+    if (ghError || !dbGuestHouses || dbGuestHouses.length === 0) {
+      console.warn('Using mock guest houses (tables not created or empty)')
+      guestHouses = MOCK_GUEST_HOUSES
+    } else {
+      guestHouses = dbGuestHouses
+    }
+
+    // 2. Fetch user bookings
+    const { data: dbBookings, error: bError } = await supabase
+      .from('bookings')
+      .select('*, guest_house:guest_houses(*), room:rooms(*)')
+      .eq('guest_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (bError || !dbBookings) {
+      console.warn('No active DB bookings found or table missing')
+      bookings = []
+    } else {
+      bookings = dbBookings
+    }
+  } catch (err) {
+    console.error('Error fetching data from Supabase, falling back to mock data:', err)
+    guestHouses = MOCK_GUEST_HOUSES
+    bookings = []
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top Navbar */}
-      <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-              <Building2 className="h-5 w-5 text-indigo-400" />
-            </div>
-            <div>
-              <span className="font-bold text-white text-base">Prasar Bharati</span>
-              <span className="text-slate-500 text-xs block -mt-1">Dehradun Cluster</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-sm font-semibold text-white">{fullName}</span>
-              <span className="text-xs text-slate-500 capitalize">{role} Account</span>
-            </div>
-            <form action={logout}>
-              <Button type="submit" variant="ghost" size="sm" className="text-slate-400 hover:text-white gap-2 cursor-pointer">
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      {/* Main content grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Welcome back, {fullName}</h1>
-          <p className="text-slate-400 text-sm">Manage your guest house reservations and applications.</p>
-        </div>
-
-        {/* Profile Card & Shortcuts */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* User profile info */}
-          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 md:col-span-1">
-            <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-              <User className="h-4 w-4 text-indigo-400" />
-              Profile Details
-            </h2>
-            <div className="space-y-3.5">
-              <div>
-                <span className="text-slate-500 text-xs block">Email Address</span>
-                <span className="text-sm text-slate-200">{email}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 text-xs block">Department</span>
-                <span className="text-sm text-slate-200">{department}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 text-xs block">Designation</span>
-                <span className="text-sm text-slate-200">{designation}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 text-xs block">Account Authorization Role</span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 capitalize mt-1">
-                  {role}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick actions & bookings stub */}
-          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 md:col-span-2 flex flex-col justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-indigo-400" />
-                Active Bookings
-              </h2>
-              <div className="border border-dashed border-slate-800 rounded-xl p-8 text-center text-slate-500">
-                <Home className="h-8 w-8 mx-auto text-slate-600 mb-3" />
-                <p className="text-sm">No active reservations found.</p>
-                <p className="text-xs text-slate-600 mt-1">New booking requests can be made in Phase 6.</p>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-900 flex flex-wrap gap-3">
-              <Button disabled size="sm" className="bg-indigo-600 text-white cursor-pointer">
-                New Booking Request
-              </Button>
-              <Button disabled size="sm" variant="outline" className="text-slate-300 border-slate-800 hover:bg-slate-900 cursor-pointer">
-                <History className="h-3.5 w-3.5" />
-                View Booking History
-              </Button>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+    <DashboardClient
+      user={user}
+      guestHouses={guestHouses}
+      bookings={bookings}
+    />
   )
 }

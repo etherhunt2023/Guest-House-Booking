@@ -1,10 +1,86 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { logout } from '@/app/auth/actions'
-import { Button } from '@/components/ui/button'
-import { Building2, Shield, LogOut, Settings, Users, Home } from 'lucide-react'
+import AdminClient from './AdminClient'
 
-export default async function AdminDashboardPage() {
+export const dynamic = 'force-dynamic'
+
+const MOCK_GUEST_HOUSES = [
+  {
+    id: 'gh-dehradun',
+    name: 'Dehradun VIP Guest House',
+    location: 'Dehradun',
+    description: 'Centrally located guest house near Haridwar bypass. Features VIP suites, green lawns, and full catering service.',
+    facilities: ['WiFi', 'AC', 'Catering', 'Parking', 'TV Lounge'],
+    caretaker_id: 'p-caretaker-1',
+    caretaker: { id: 'p-caretaker-1', full_name: 'Amit Negi', role: 'caretaker' }
+  },
+  {
+    id: 'gh-mussoorie',
+    name: 'Mussoorie Transit House',
+    location: 'Mussoorie',
+    description: 'Scenic transit house located at the hills of Mussoorie, adjacent to the Doordarshan Transmitter compound. Stunning Himalayan views.',
+    facilities: ['WiFi', 'Heater', 'Catering', 'Balcony View'],
+    caretaker_id: 'p-caretaker-2',
+    caretaker: { id: 'p-caretaker-2', full_name: 'Rajesh Sharma', role: 'caretaker' }
+  }
+]
+
+const MOCK_ROOMS = [
+  { id: 'rm-101', guest_house_id: 'gh-dehradun', room_number: '101', type: 'suite', capacity: 2, tariff_internal: 500, tariff_external: 1500, status: 'available' },
+  { id: 'rm-102', guest_house_id: 'gh-dehradun', room_number: '102', type: 'deluxe', capacity: 2, tariff_internal: 300, tariff_external: 1000, status: 'available' },
+  { id: 'rm-201', guest_house_id: 'gh-mussoorie', room_number: '201', type: 'suite', capacity: 2, tariff_internal: 600, tariff_external: 2000, status: 'available' },
+  { id: 'rm-202', guest_house_id: 'gh-mussoorie', room_number: '202', type: 'deluxe', capacity: 2, tariff_internal: 400, tariff_external: 1200, status: 'maintenance' }
+]
+
+const MOCK_BOOKINGS = [
+  {
+    id: 'b-mock-1',
+    guest_id: 'g-user-1',
+    guest_house_id: 'gh-dehradun',
+    room_id: 'rm-101',
+    check_in: '2026-07-10',
+    check_out: '2026-07-12',
+    guest_count: 2,
+    purpose: 'Official meeting at cluster head office',
+    status: 'pending_caretaker',
+    total_amount: 1000,
+    payment_status: 'pending',
+    created_at: new Date(Date.now() - 3600000).toISOString(),
+    guest: { full_name: 'Dr. Suresh Rawat', phone: '9876543210' },
+    guest_house: { name: 'Dehradun VIP Guest House' },
+    room: { room_number: '101', type: 'suite' }
+  },
+  {
+    id: 'b-mock-2',
+    guest_id: 'g-user-2',
+    guest_house_id: 'gh-mussoorie',
+    room_id: 'rm-201',
+    check_in: '2026-07-15',
+    check_out: '2026-07-18',
+    guest_count: 1,
+    purpose: 'Official inspection at Mussoorie Transmitter',
+    status: 'approved',
+    total_amount: 1800,
+    payment_status: 'paid',
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    guest: { full_name: 'Meena Kandwal', phone: '9412345678' },
+    guest_house: { name: 'Mussoorie Transit House' },
+    room: { room_number: '201', type: 'suite' }
+  }
+]
+
+const MOCK_AUDIT_LOGS = [
+  { id: 'l-1', action: 'create_guest_house', details: { name: 'Dehradun VIP Guest House' }, created_at: new Date(Date.now() - 172800000).toISOString(), user: { full_name: 'System Admin' } },
+  { id: 'l-2', action: 'create_room', details: { room_number: '101', type: 'suite' }, created_at: new Date(Date.now() - 172700000).toISOString(), user: { full_name: 'System Admin' } }
+]
+
+const MOCK_STAFF = [
+  { id: 'p-caretaker-1', full_name: 'Amit Negi', role: 'caretaker' },
+  { id: 'p-caretaker-2', full_name: 'Rajesh Sharma', role: 'caretaker' },
+  { id: 'p-manager-1', full_name: 'Karan Negi', role: 'manager' }
+]
+
+export default async function AdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -13,94 +89,94 @@ export default async function AdminDashboardPage() {
   }
 
   const role = user.user_metadata?.role || 'guest'
-  const fullName = user.user_metadata?.full_name || 'Admin User'
+  if (role !== 'admin') {
+    redirect('/dashboard')
+  }
+
+  let guestHouses = []
+  let rooms = []
+  let bookings = []
+  let auditLogs = []
+  let staffProfiles = []
+
+  try {
+    // 1. Fetch guest houses
+    const { data: dbGuestHouses, error: ghError } = await supabase
+      .from('guest_houses')
+      .select('*, caretaker:profiles(*)')
+      .order('name')
+
+    if (ghError || !dbGuestHouses || dbGuestHouses.length === 0) {
+      guestHouses = MOCK_GUEST_HOUSES
+    } else {
+      guestHouses = dbGuestHouses
+    }
+
+    // 2. Fetch rooms
+    const { data: dbRooms, error: rError } = await supabase
+      .from('rooms')
+      .select('*, guest_house:guest_houses(*)')
+      .order('room_number')
+
+    if (rError || !dbRooms || dbRooms.length === 0) {
+      rooms = MOCK_ROOMS
+    } else {
+      rooms = dbRooms
+    }
+
+    // 3. Fetch bookings
+    const { data: dbBookings, error: bError } = await supabase
+      .from('bookings')
+      .select('*, guest:profiles(*), guest_house:guest_houses(*), room:rooms(*)')
+      .order('created_at', { ascending: false })
+
+    if (bError || !dbBookings || dbBookings.length === 0) {
+      bookings = MOCK_BOOKINGS
+    } else {
+      bookings = dbBookings
+    }
+
+    // 4. Fetch audit logs
+    const { data: dbLogs, error: logError } = await supabase
+      .from('audit_logs')
+      .select('*, user:profiles(*)')
+      .order('created_at', { ascending: false })
+
+    if (logError || !dbLogs || dbLogs.length === 0) {
+      auditLogs = MOCK_AUDIT_LOGS
+    } else {
+      auditLogs = dbLogs
+    }
+
+    // 5. Fetch staff profiles
+    const { data: dbStaff, error: sError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('role', ['admin', 'manager', 'caretaker'])
+      .order('full_name')
+
+    if (sError || !dbStaff || dbStaff.length === 0) {
+      staffProfiles = MOCK_STAFF
+    } else {
+      staffProfiles = dbStaff
+    }
+  } catch (err) {
+    console.error('Database connection failed, running on mock admin data:', err)
+    guestHouses = MOCK_GUEST_HOUSES
+    rooms = MOCK_ROOMS
+    bookings = MOCK_BOOKINGS
+    auditLogs = MOCK_AUDIT_LOGS
+    staffProfiles = MOCK_STAFF
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top Navbar */}
-      <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-              <Building2 className="h-5 w-5 text-indigo-400" />
-            </div>
-            <div>
-              <span className="font-bold text-white text-base">Prasar Bharati</span>
-              <span className="text-slate-500 text-xs block -mt-1">Dehradun Cluster</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-sm font-semibold text-white">{fullName}</span>
-              <span className="text-xs text-rose-500 capitalize font-semibold flex items-center gap-1 justify-end">
-                <Shield className="h-3 w-3" />
-                {role}
-              </span>
-            </div>
-            <form action={logout}>
-              <Button type="submit" variant="ghost" size="sm" className="text-slate-400 hover:text-white gap-2 cursor-pointer">
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      {/* Main dashboard content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="h-5 w-5 text-indigo-400" />
-            <h1 className="text-2xl font-bold text-white">System Administration</h1>
-          </div>
-          <p className="text-slate-400 text-sm">Overall guest house booking portal operations, user management, and system logs.</p>
-        </div>
-
-        {/* Dashboard Stats Placeholders */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/10">
-              <Home className="h-6 w-6" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-500 block">Total Guest Houses</span>
-              <span className="text-2xl font-bold text-white">4</span>
-            </div>
-          </div>
-
-          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/10">
-              <Users className="h-6 w-6" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-500 block">Total Portal Users</span>
-              <span className="text-2xl font-bold text-white">128</span>
-            </div>
-          </div>
-
-          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/10">
-              <Settings className="h-6 w-6" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-500 block">System Integrations</span>
-              <span className="text-2xl font-bold text-white">Razorpay & Supabase</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Informational Box */}
-        <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6">
-          <h2 className="text-base font-semibold text-white mb-3">Admin Permissions Granted</h2>
-          <p className="text-sm text-slate-400 mb-4 leading-relaxed">
-            As a Super Admin, you have access to configure and modify guest houses (Phase 4), manage rooms (Phase 5), view full occupancy calendars (Phase 8), manage payment refunds (Phase 9), and extract audit history logs (Phase 14).
-          </p>
-          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            Route Protection Active
-          </div>
-        </div>
-      </main>
-    </div>
+    <AdminClient
+      user={user}
+      guestHouses={guestHouses}
+      rooms={rooms}
+      bookings={bookings}
+      auditLogs={auditLogs}
+      staffProfiles={staffProfiles}
+    />
   )
 }
